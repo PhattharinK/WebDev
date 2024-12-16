@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "txactions",
+  "info": {
+    "singularName": "txaction",
+    "pluralName": "txactions",
+    "displayName": "txaction"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "action_datetime": {
+      "type": "datetime",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "note": {
+      "type": "string",
+      "required": true
+    },
+    "creator": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "txactions"
+    }
+  }
+}
