@@ -6,6 +6,8 @@ import { Divider } from "antd";
 import AddItem from "./components/AddItem";
 import { Spin, Typography } from "antd";
 import axios from "axios";
+import EditItem from "./components/EditItem";
+import Item from "antd/es/list/Item";
 
 const URL_TXACTIONS = "/api/txactions";
 
@@ -13,6 +15,9 @@ function FinanceScreen() {
   const [summaryAmount, setSummaryAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [transactionData, setTransactionData] = useState([]);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentEditRecord, setCurrentEditRecord] = useState(null);
 
   const fetchItems = async () => {
     try {
@@ -58,16 +63,25 @@ function FinanceScreen() {
     );
   };
 
-  const handleRowEdited = async (id, updatedData) => {
+  const updateItem = async (item) => {
     try {
-      setIsLoading(true);
-      await axios.put(`${URL_TXACTIONS}/${id}`);
-      fetchItems();
+      setIsLoading(true); // Show loading indicator
+      await axios.put(`${URL_TXACTIONS}/${item.id}`, { data: item }); // Send updated data
+      fetchItems(); // Refresh the list after updating
     } catch (err) {
-      console.log(err);
+      console.log("Error updating item:", err);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Hide loading indicator
     }
+  };
+
+  const handleRowEdit = (record) => {
+    setCurrentEditRecord(record);
+    setIsEditModalOpen(true);
+  };
+
+  const handleRowEdited = async (updatedItem) => {
+    await updateItem(updatedItem);
   };
 
   const handleRowDeleted = async (id) => {
@@ -110,9 +124,20 @@ function FinanceScreen() {
           <TransactionList
             data={transactionData}
             onNoteChanged={handleNoteChanged}
-            onRowEdited={handleRowEdited}
+            onRowEdited={handleRowEdit}
             onRowDeleted={handleRowDeleted}
           />
+          {currentEditRecord && (
+            <EditItem
+              isOpen={isEditModalOpen}
+              item={currentEditRecord}
+              onCancel={() => setIsEditModalOpen(false)}
+              onItemEdited={(updatedItem) => {
+                handleRowEdited(updatedItem); // Calls updateItem inside
+                setIsEditModalOpen(false); // Close modal
+              }}
+            />
+          )}
         </Spin>
       )}
     </>

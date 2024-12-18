@@ -28,12 +28,7 @@ export default function TransactionList(props) {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button
-            type="default"
-            onClick={() =>
-              props.onRowEdited(record.id, { note: "Notes", amount: 500 })
-            }
-          >
+          <Button type="default" onClick={() => props.onRowEdited(record)}>
             Edit
           </Button>
 

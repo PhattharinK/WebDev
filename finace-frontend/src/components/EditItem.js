@@ -1,40 +1,49 @@
-import { Modal, Form } from "antd";
+import React, { useEffect } from "react";
+import { Modal, Form, Input, InputNumber } from "antd";
 
-import { Button, Form, Select, Input, InputNumber } from "antd";
+const EditItem = ({ isOpen, onClose, onItemEdited, item }) => {
+  const [form] = Form.useForm();
 
-export default function EditItem(props) {
+  // Set form fields with current data when Modal opens
+  useEffect(() => {
+    if (isOpen) {
+      form.setFieldsValue(item); // Populate form fields
+    }
+  }, [isOpen, item, form]);
+
+  // Handle form submission
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      const updatedItem = { ...item, ...values };
+      onItemEdited(updatedItem); // Pass updated data to parent
+    });
+  };
+
   return (
-    <Form layout="inline" onFinish={props.onItemAdded}>
-      <Form.Item name="type" label="ชนิด" rules={[{ required: true }]}>
-        <Select
-          allowClear
-          style={{ width: "100px" }}
-          options={[
-            {
-              value: "income",
-              label: "รายรับ",
-            },
-            {
-              value: "expense",
-              label: "รายจ่าย",
-            },
-          ]}
-        />
-      </Form.Item>
-
-      <Form.Item name="amount" label="จำนวนเงิน" rules={[{ required: true }]}>
-        <InputNumber placeholder="จำนวนเงิน" />
-      </Form.Item>
-
-      <Form.Item name="note" label="หมายเหตุ" rules={[{ required: true }]}>
-        <Input placeholder="Note" />
-      </Form.Item>
-
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Add
-        </Button>
-      </Form.Item>
-    </Form>
+    <Modal
+      title="Edit Transaction"
+      open={isOpen}
+      onOk={handleSubmit}
+      onCancel={onClose}
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item
+          name="note"
+          label="Note"
+          rules={[{ required: true, message: "Please input the note!" }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="amount"
+          label="Amount"
+          rules={[{ required: true, message: "Please input the amount!" }]}
+        >
+          <InputNumber style={{ width: "100%" }} />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
-}
+};
+
+export default EditItem;
