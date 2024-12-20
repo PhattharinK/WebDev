@@ -57,7 +57,7 @@ function App() {
                 isAuthenticated ? <FinanceScreen onLogout={handleLogout} /> : <Navigate to="/" />
               }
             />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/" />} />  
           </Routes>
         </header>
       </div>
