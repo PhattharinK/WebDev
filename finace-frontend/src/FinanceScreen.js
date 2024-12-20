@@ -7,7 +7,6 @@ import AddItem from "./components/AddItem";
 import { Spin, Typography } from "antd";
 import axios from "axios";
 import EditItem from "./components/EditItem";
-import Item from "antd/es/list/Item";
 
 const URL_TXACTIONS = "/api/txactions";
 
@@ -65,13 +64,13 @@ function FinanceScreen() {
 
   const updateItem = async (item) => {
     try {
-      setIsLoading(true); // Show loading indicator
-      await axios.put(`${URL_TXACTIONS}/${item.id}`, { data: item }); // Send updated data
-      fetchItems(); // Refresh the list after updating
+      setIsLoading(true);
+      await axios.put(`${URL_TXACTIONS}/${item.id}`, { data: item });
+      fetchItems();
     } catch (err) {
       console.log("Error updating item:", err);
     } finally {
-      setIsLoading(false); // Hide loading indicator
+      setIsLoading(false);
     }
   };
 
@@ -117,7 +116,7 @@ function FinanceScreen() {
       {!isLoading && (
         <Spin spinning={isLoading}>
           <Typography.Title>
-            จำนวนเงินปัจจุบัน {summaryAmount} บาท
+            You have {summaryAmount} Baht
           </Typography.Title>
           <AddItem onItemAdded={handleAddItem} />
           <Divider>บันทึก รายรับ - รายจ่าย</Divider>
@@ -133,8 +132,8 @@ function FinanceScreen() {
               item={currentEditRecord}
               onCancel={() => setIsEditModalOpen(false)}
               onItemEdited={(updatedItem) => {
-                handleRowEdited(updatedItem); // Calls updateItem inside
-                setIsEditModalOpen(false); // Close modal
+                handleRowEdited(updatedItem);
+                setIsEditModalOpen(false);
               }}
             />
           )}
