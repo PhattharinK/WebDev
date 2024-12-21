@@ -1,14 +1,17 @@
 import "./App.css";
 import TransactionList from "./components/TransactionList";
-import { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import { Divider } from "antd";
 import AddItem from "./components/AddItem";
-import { Spin, Typography } from "antd";
-import axios from "axios";
 import EditItem from "./components/EditItem";
+import { Divider, Layout, Typography, Spin, message } from "antd";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import axios from "axios";
+
+const { Sider, Content } = Layout;
 
 const URL_TXACTIONS = "/api/txactions";
+const URL_USER = "/api/user/me";
 
 function FinanceScreen() {
   const [summaryAmount, setSummaryAmount] = useState(0);
@@ -17,6 +20,23 @@ function FinanceScreen() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentEditRecord, setCurrentEditRecord] = useState(null);
+
+  const [user, setUser] = useState(null);
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  const navigate = useNavigate();
+
+  const getUserData = async () => {
+    try {
+      const response = await axios.get(URL_USER, {
+        headers: { Authorization: `Bearer ${token}`
+        },
+      });
+      setUser(response.data);
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+    }
+  }
 
   const fetchItems = async () => {
     try {
@@ -34,6 +54,14 @@ function FinanceScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    message.info("You have been logged out.");
+    console.log("User logged out.");
+    navigate("/login");
   };
 
   const handleAddItem = async (item) => {
@@ -95,6 +123,14 @@ function FinanceScreen() {
     }
   };
 
+  // useEffect(() => {
+  //   if (token) {
+  //     getUserData();
+  //   } else {
+  //     message.error("You need to login to access this page.")
+  //   }
+  // }, [token]);
+
   useEffect(() => {
     fetchItems();
   }, []);
@@ -112,19 +148,21 @@ function FinanceScreen() {
   }, [transactionData]);
 
   return (
-    <>
-      {!isLoading && (
+    <Layout style={{ minHeight: "100vh" }}>
+
+      {/* Main Content */}
+      <Content style={{ padding: "20px" }}>
         <Spin spinning={isLoading}>
-          <Typography.Title>
+          <Typography.Title level={2}>
             You have {summaryAmount} Baht
           </Typography.Title>
-          <AddItem onItemAdded={handleAddItem} />
-          <Divider>บันทึก รายรับ - รายจ่าย</Divider>
+          <AddItem onItemAdded={(item) => console.log("Item Added:", item)} />
+          <Divider>Transactions</Divider>
           <TransactionList
             data={transactionData}
-            onNoteChanged={handleNoteChanged}
-            onRowEdited={handleRowEdit}
-            onRowDeleted={handleRowDeleted}
+            onNoteChanged={(id, note) => console.log("Note Updated:", id, note)}
+            onRowEdited={(record) => console.log("Edit Row:", record)}
+            onRowDeleted={(id) => console.log("Delete Row:", id)}
           />
           {currentEditRecord && (
             <EditItem
@@ -132,14 +170,14 @@ function FinanceScreen() {
               item={currentEditRecord}
               onCancel={() => setIsEditModalOpen(false)}
               onItemEdited={(updatedItem) => {
-                handleRowEdited(updatedItem);
+                console.log("Item Edited:", updatedItem);
                 setIsEditModalOpen(false);
               }}
             />
           )}
         </Spin>
-      )}
-    </>
+      </Content>
+    </Layout>
   );
 }
 

@@ -19,14 +19,14 @@ export default function LoginScreen(props) {
       setErrMsg(null);
       const response = await axios.post(URL_AUTH, { ...formData });
       const token = response.data.jwt;
+
+      const expirationTime = new Date().getTime() + 3600 * 1000; // 1 hour in milliseconds
+
+      sessionStorage.setItem("auth_token", token);
+      sessionStorage.setItem("auth_token_expiration", expirationTime);
+
       axios.defaults.headers.common = { Authorization: `bearer ${token}` };
-      if (rememberMe) {
-        localStorage.setItem("authToken", token);
-      } else {
-        sessionStorage.setItem("authToken", token);
-      }
-      axios.defaults.headers.common = { Authorization: `bearer ${token}` };
-      
+
       props.onLoginSuccess();
       navigate("/dashboard");
     } catch (err) {
@@ -41,7 +41,7 @@ export default function LoginScreen(props) {
     }
   };
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
+    <div style={{maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
       <h2>Login</h2>
       <Form layout="vertical" onFinish={handleLogin} autoComplete="off">
         {errMsg && (

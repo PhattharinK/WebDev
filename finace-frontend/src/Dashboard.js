@@ -1,146 +1,96 @@
-import "./App.css";
-import TransactionList from "./components/TransactionList";
-import { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import { Divider } from "antd";
-import AddItem from "./components/AddItem";
-import { Spin, Typography } from "antd";
-import axios from "axios";
-import EditItem from "./components/EditItem";
+import React, { useState } from "react";
+import { Form, Input, Button, Typography, message } from "antd";
 
-const URL_TXACTIONS = "/api/txactions";
-
-function dashboard() {
-  const [summaryAmount, setSummaryAmount] = useState(0);
+const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [transactionData, setTransactionData] = useState([]);
+  const [form] = Form.useForm();
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentEditRecord, setCurrentEditRecord] = useState(null);
-
-  const fetchItems = async () => {
+  const handleFormSubmit = async (values) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const response = await axios.get(URL_TXACTIONS);
-      setTransactionData(
-        response.data.data.map((row) => ({
-          id: row.id,
-          key: row.id,
-          ...row.attributes,
-        })),
-      );
-    } catch (err) {
-      console.log(err);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      message.success("Profile updated successfully!");
+      console.log("Updated values:", values);
+    } catch (error) {
+      message.error("Failed to update profile.");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddItem = async (item) => {
-    try {
-      setIsLoading(true);
-      const params = { ...item, action_datetime: dayjs() };
-      const response = await axios.post(URL_TXACTIONS, { data: params });
-      const { id, attributes } = response.data.data;
-      setTransactionData([
-        ...transactionData,
-        { id: id, key: id, ...attributes },
-      ]);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleLogout = () => {
+    message.info("You have been logged out.");
+    console.log("User logged out.");
   };
-
-  const handleNoteChanged = (id, note) => {
-    setTransactionData(
-      transactionData.map((transaction) => {
-        transaction.note = transaction.id === id ? note : transaction.note;
-        return transaction;
-      }),
-    );
-  };
-
-  const updateItem = async (item) => {
-    try {
-      setIsLoading(true);
-      await axios.put(`${URL_TXACTIONS}/${item.id}`, { data: item });
-      fetchItems();
-    } catch (err) {
-      console.log("Error updating item:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRowEdit = (record) => {
-    setCurrentEditRecord(record);
-    setIsEditModalOpen(true);
-  };
-
-  const handleRowEdited = async (updatedItem) => {
-    await updateItem(updatedItem);
-  };
-
-  const handleRowDeleted = async (id) => {
-    try {
-      setIsLoading(true);
-      await axios.delete(`${URL_TXACTIONS}/${id}`);
-      fetchItems();
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  useEffect(() => {
-    setSummaryAmount(
-      transactionData.reduce(
-        (sum, transaction) =>
-          transaction.type === "income"
-            ? sum + transaction.amount
-            : sum - transaction.amount,
-        0,
-      ),
-    );
-  }, [transactionData]);
 
   return (
-    <>
-      {!isLoading && (
-        <Spin spinning={isLoading}>
-          <Typography.Title>
-            You have {summaryAmount} Baht
-          </Typography.Title>
-          <AddItem onItemAdded={handleAddItem} />
-          <Divider>บันทึก รายรับ - รายจ่าย</Divider>
-          <TransactionList
-            data={transactionData}
-            onNoteChanged={handleNoteChanged}
-            onRowEdited={handleRowEdit}
-            onRowDeleted={handleRowDeleted}
-          />
-          {currentEditRecord && (
-            <EditItem
-              isOpen={isEditModalOpen}
-              item={currentEditRecord}
-              onCancel={() => setIsEditModalOpen(false)}
-              onItemEdited={(updatedItem) => {
-                handleRowEdited(updatedItem);
-                setIsEditModalOpen(false);
-              }}
-            />
-          )}
-        </Spin>
-      )}
-    </>
-  );
-}
+    <div style={{ maxWidth: "400px", margin: "50px auto", padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
+      <Typography.Title level={3} style={{ textAlign: "center" }}>
+        User Dashboard
+      </Typography.Title>
 
-export default dashboard;
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={handleFormSubmit}
+        initialValues={{
+          firstName: "John",
+          lastName: "Doe",
+          email: "john.doe@example.com",
+        }}
+      >
+
+        <Form.Item
+          label="First Name"
+          name="firstName"
+          rules={[{ required: true, message: "Please enter your first name" }]}
+        >
+          <Input placeholder="Enter your first name" />
+        </Form.Item>
+
+        <Form.Item
+          label="Last Name"
+          name="lastName"
+          rules={[{ required: true, message: "Please enter your last name" }]}
+        >
+          <Input placeholder="Enter your last name" />
+        </Form.Item>
+        
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Please enter your email" },
+            { type: "email", message: "Please enter a valid email address" },
+          ]}
+        >
+          <Input placeholder="Enter your email" />
+        </Form.Item>
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: "Please enter your password" },
+            { min: 6, message: "Password must be at least 6 characters long" },
+          ]}
+        >
+          <Input.Password placeholder="Enter a new password" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={isLoading} block>
+            Update Profile
+          </Button>
+        </Form.Item>
+      </Form>
+
+      <Button type="danger" onClick={handleLogout} block>
+        Logout
+      </Button>
+    </div>
+  );
+};
+
+export default UserDashboard;
