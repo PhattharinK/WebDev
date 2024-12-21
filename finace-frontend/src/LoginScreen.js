@@ -20,7 +20,7 @@ export default function LoginScreen(props) {
       const response = await axios.post(URL_AUTH, { ...formData });
       const token = response.data.jwt;
 
-      const expirationTime = new Date().getTime() + 3600 * 1000; // 1 hour in milliseconds
+      const expirationTime = new Date().getTime() + 3600 * 1000;
 
       sessionStorage.setItem("auth_token", token);
       sessionStorage.setItem("auth_token_expiration", expirationTime);
